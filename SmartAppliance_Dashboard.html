@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartGrid — Appliance Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN SYSTEM — THEMES
+═══════════════════════════════════════════════════════ */
+:root {
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-xl: 40px;
+  --transition: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 0.2s ease;
+  --shadow-soft: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lift: 0 12px 48px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+[data-theme="dawn"] {
+  --bg-base: #f5f0eb;
+  --bg-card: #fdf9f5;
+  --bg-card2: #f9f3ec;
+  --bg-glass: rgba(253,249,245,0.85);
+  --border: rgba(180,155,130,0.18);
+  --border-strong: rgba(180,155,130,0.35);
+  --text-primary: #2d1f14;
+  --text-secondary: #7a6355;
+  --text-muted: #b09882;
+  --accent: #e07b39;
+  --accent2: #c45e2a;
+  --accent-glow: rgba(224,123,57,0.2);
+  --on-color: #2d7a45;
+  --on-bg: rgba(45,122,69,0.1);
+  --off-color: #c44a4a;
+  --off-bg: rgba(196,74,74,0.1);
+  --chart-grid: rgba(180,155,130,0.15);
+  --noise-opacity: 0.025;
+  --mesh1: #f5dfc8;
+  --mesh2: #ead4bd;
+  --mesh3: #fce8d8;
+  --pill-bg: rgba(180,155,130,0.12);
+}
+
+[data-theme="slate"] {
+  --bg-base: #0f1117;
+  --bg-card: #161b24;
+  --bg-card2: #1a2030;
+  --bg-glass: rgba(22,27,36,0.9);
+  --border: rgba(100,130,180,0.12);
+  --border-strong: rgba(100,130,180,0.25);
+  --text-primary: #e8edf5;
+  --text-secondary: #8a9ab5;
+  --text-muted: #4a5570;
+  --accent: #4f8ef7;
+  --accent2: #6aa3ff;
+  --accent-glow: rgba(79,142,247,0.25);
+  --on-color: #4fc88a;
+  --on-bg: rgba(79,200,138,0.1);
+  --off-color: #f06060;
+  --off-bg: rgba(240,96,96,0.1);
+  --chart-grid: rgba(100,130,180,0.08);
+  --noise-opacity: 0.04;
+  --mesh1: #1a2540;
+  --mesh2: #0d1520;
+  --mesh3: #1e2d45;
+  --pill-bg: rgba(100,130,180,0.1);
+}
+
+[data-theme="forest"] {
+  --bg-base: #0d1a12;
+  --bg-card: #121f17;
+  --bg-card2: #162a1c;
+  --bg-glass: rgba(18,31,23,0.9);
+  --border: rgba(80,160,100,0.12);
+  --border-strong: rgba(80,160,100,0.25);
+  --text-primary: #dff0e5;
+  --text-secondary: #7aaa88;
+  --text-muted: #3d6e4a;
+  --accent: #4ec97a;
+  --accent2: #6eda94;
+  --accent-glow: rgba(78,201,122,0.22);
+  --on-color: #4ec97a;
+  --on-bg: rgba(78,201,122,0.1);
+  --off-color: #e0705a;
+  --off-bg: rgba(224,112,90,0.1);
+  --chart-grid: rgba(80,160,100,0.08);
+  --noise-opacity: 0.035;
+  --mesh1: #152a1c;
+  --mesh2: #0c1a10;
+  --mesh3: #1c3525;
+  --pill-bg: rgba(80,160,100,0.1);
+}
+
+[data-theme="lavender"] {
+  --bg-base: #f0eef8;
+  --bg-card: #f8f6ff;
+  --bg-card2: #f2f0fc;
+  --bg-glass: rgba(248,246,255,0.88);
+  --border: rgba(140,120,200,0.15);
+  --border-strong: rgba(140,120,200,0.3);
+  --text-primary: #1e1535;
+  --text-secondary: #6b5a8a;
+  --text-muted: #a898c8;
+  --accent: #7c5cbf;
+  --accent2: #9470d8;
+  --accent-glow: rgba(124,92,191,0.2);
+  --on-color: #4a9e6b;
+  --on-bg: rgba(74,158,107,0.1);
+  --off-color: #c44a6a;
+  --off-bg: rgba(196,74,106,0.1);
+  --chart-grid: rgba(140,120,200,0.12);
+  --noise-opacity: 0.02;
+  --mesh1: #e8e0f8;
+  --mesh2: #f4f0ff;
+  --mesh3: #ede5fa;
+  --pill-bg: rgba(140,120,200,0.1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Mesh background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, var(--mesh1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 90%, var(--mesh2) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, var(--mesh3) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.5s ease;
+}
+
+/* Noise texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: var(--noise-opacity);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════════ */
+.app-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 48px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.5s ease;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.logo-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.connection-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 40px;
+  background: var(--pill-bg);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+.connection-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--off-color);
+  box-shadow: 0 0 0 2px var(--off-bg);
+  transition: all 0.3s ease;
+}
+.connection-dot.live { background: var(--on-color); box-shadow: 0 0 0 2px var(--on-bg), 0 0 8px var(--on-color); }
+
+.theme-switcher {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--pill-bg);
+  border-radius: 40px;
+  border: 1px solid var(--border);
+}
+.theme-btn {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.theme-btn:hover { transform: scale(1.15); }
+.theme-btn.active { border-color: var(--text-primary); }
+.theme-btn[data-t="dawn"]     { background: linear-gradient(135deg, #e07b39, #f5dfc8); }
+.theme-btn[data-t="slate"]    { background: linear-gradient(135deg, #4f8ef7, #0f1117); }
+.theme-btn[data-t="forest"]   { background: linear-gradient(135deg, #4ec97a, #0d1a12); }
+.theme-btn[data-t="lavender"] { background: linear-gradient(135deg, #7c5cbf, #f0eef8); }
+
+.ip-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ip-input {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 7px 12px;
+  border-radius: 30px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  width: 160px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.ip-input:focus { border-color: var(--accent); }
+
+.btn-connect {
+  padding: 7px 16px;
+  border-radius: 30px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+.btn-connect:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
+.btn-connect:active { transform: translateY(0); }
+
+/* ═══════════════════════════════════════════════════════
+   MAIN GRID
+═══════════════════════════════════════════════════════ */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 18px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════════════ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-soft);
+  transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+  opacity: 0.5;
+}
+.card:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.card-icon {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  background: var(--pill-bg);
+}
+
+/* Span helpers */
+.col-span-2 { grid-column: span 2; }
+.col-span-3 { grid-column: span 3; }
+.col-span-1 { grid-column: span 1; }
+
+/* ═══════════════════════════════════════════════════════
+   STAT DISPLAY
+═══════════════════════════════════════════════════════ */
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1;
+  transition: color 0.3s;
+}
+.stat-value.accent { color: var(--accent); }
+.stat-unit {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-left: 4px;
+  font-weight: 400;
+}
+.stat-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.stat-sub {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOTAL POWER CARD (large)
+═══════════════════════════════════════════════════════ */
+.power-card { grid-column: span 1; }
+.power-ring-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0 16px;
+  position: relative;
+}
+.power-ring-wrap canvas { display: block; }
+.power-ring-center {
+  position: absolute;
+  text-align: center;
+  pointer-events: none;
+}
+.power-ring-watts {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+.power-ring-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.power-stats-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border);
+}
+.power-stat-item { text-align: center; }
+.power-stat-val {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.power-stat-lbl {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   APPLIANCE CONTROL CARDS
+═══════════════════════════════════════════════════════ */
+.appliance-card {
+  position: relative;
+}
+.appliance-card.active-glow {
+  box-shadow: 0 0 0 1px var(--on-color), var(--shadow-lift), 0 0 40px rgba(78,201,122,0.08);
+}
+
+.appliance-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.appliance-icon-wrap {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  background: var(--pill-bg);
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+.appliance-icon-wrap.on {
+  background: var(--on-bg);
+  border-color: var(--on-color);
+  box-shadow: 0 0 20px rgba(78,201,122,0.15);
+}
+.appliance-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+.appliance-status {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--off-color);
+  transition: background 0.3s;
+}
+.status-dot.on { background: var(--on-color); box-shadow: 0 0 6px var(--on-color); }
+
+/* Toggle Switch */
+.toggle-wrap { position: relative; }
+.toggle-input { display: none; }
+.toggle-label {
+  display: block;
+  width: 56px; height: 30px;
+  border-radius: 30px;
+  background: var(--pill-bg);
+  border: 1.5px solid var(--border-strong);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.toggle-label::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: all var(--transition);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.toggle-input:checked + .toggle-label {
+  background: var(--on-bg);
+  border-color: var(--on-color);
+  box-shadow: 0 0 12px var(--on-bg);
+}
+.toggle-input:checked + .toggle-label::after {
+  left: calc(100% - 25px);
+  background: var(--on-color);
+  box-shadow: 0 2px 8px var(--on-color);
+}
+
+/* Power bar */
+.power-bar-wrap {
+  margin: 16px 0 8px;
+}
+.power-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.power-bar-watts {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.power-bar-limit {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.power-bar-bg {
+  height: 8px;
+  border-radius: 40px;
+  background: var(--pill-bg);
+  overflow: hidden;
+  position: relative;
+}
+.power-bar-fill {
+  height: 100%;
+  border-radius: 40px;
+  transition: width 0.6s ease, background-color 0.3s;
+  position: relative;
+}
+.power-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 20px;
+  background: inherit;
+  filter: brightness(1.5);
+  border-radius: 40px;
+}
+
+/* Limit slider */
+.limit-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.limit-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.limit-val {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 500;
+}
+.range-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 5px;
+  border-radius: 40px;
+  background: var(--pill-bg);
+  outline: none;
+  cursor: pointer;
+}
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 2px 8px var(--accent-glow);
+  transition: transform 0.2s;
+}
+.range-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+/* Energy info */
+.energy-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--pill-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.energy-item { text-align: center; }
+.energy-val {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.energy-lbl {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-top: 2px;
+}
+
+/* Alarm badge */
+.alarm-badge {
+  position: absolute;
+  top: 16px; right: 16px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: var(--off-bg);
+  border: 1px solid var(--off-color);
+  color: var(--off-color);
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  gap: 5px;
+  animation: pulse-alarm 1s ease-in-out infinite;
+}
+.alarm-badge.visible { display: flex; }
+@keyframes pulse-alarm {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   BILL PREDICTOR
+═══════════════════════════════════════════════════════ */
+.bill-card { background: var(--bg-card2); }
+.bill-main {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 8px 0;
+}
+.bill-currency {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.bill-amount {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.bill-period {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.bill-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--pill-bg);
+}
+.bill-row-label { font-size: 0.8rem; color: var(--text-secondary); }
+.bill-row-val {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.tariff-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.tariff-label {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.tariff-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tariff-input {
+  width: 80px;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.tariff-input:focus { border-color: var(--accent); }
+.tariff-unit { font-size: 0.78rem; color: var(--text-muted); }
+.tariff-save {
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tariff-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow); }
+
+/* ═══════════════════════════════════════════════════════
+   POWER CHART
+═══════════════════════════════════════════════════════ */
+.chart-card { grid-column: span 2; min-height: 300px; }
+.chart-controls {
+  display: flex;
+  gap: 6px;
+}
+.chart-tab {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chart-tab.active {
+  background: var(--pill-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.chart-wrap { position: relative; height: 220px; }
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HISTORY TABLE
+═══════════════════════════════════════════════════════ */
+.history-card { grid-column: span 2; }
+.history-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.history-scroll::-webkit-scrollbar { width: 4px; }
+.history-scroll::-webkit-scrollbar-track { background: transparent; }
+.history-scroll::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  background: var(--bg-card2);
+  position: sticky; top: 0;
+  border-bottom: 1px solid var(--border);
+}
+.history-table td {
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.history-table tr:last-child td { border-bottom: none; }
+.history-table tr:hover td { background: var(--pill-bg); }
+.history-table td.mono { font-family: var(--font-mono); }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.status-pill.on { background: var(--on-bg); color: var(--on-color); }
+.status-pill.off { background: var(--off-bg); color: var(--off-color); }
+
+/* ═══════════════════════════════════════════════════════
+   SUGGESTIONS
+═══════════════════════════════════════════════════════ */
+.suggest-card { grid-column: span 1; }
+.suggestion-list { display: flex; flex-direction: column; gap: 10px; }
+.suggestion-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--pill-bg);
+  transition: all 0.2s;
+}
+.suggestion-item:hover { border-color: var(--accent); transform: translateX(2px); }
+.suggest-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.suggest-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.suggest-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.suggest-tag.tip { background: var(--on-bg); color: var(--on-color); }
+.suggest-tag.warn { background: var(--off-bg); color: var(--off-color); }
+.suggest-tag.info { background: var(--accent-glow); color: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════
+   RESET BUTTON
+═══════════════════════════════════════════════════════ */
+.reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reset-btn:hover { border-color: var(--off-color); color: var(--off-color); }
+
+/* ═══════════════════════════════════════════════════════
+   ALARM TOAST
+═══════════════════════════════════════════════════════ */
+#alarmToast {
+  position: fixed;
+  top: 24px; right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--off-color);
+  box-shadow: var(--shadow-lift);
+  max-width: 320px;
+  animation: slide-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: all;
+}
+@keyframes slide-in {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.toast-icon { font-size: 22px; }
+.toast-body { flex: 1; }
+.toast-title { font-weight: 600; font-size: 0.85rem; color: var(--off-color); }
+.toast-msg { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+.toast-close {
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.toast-close:hover { background: var(--pill-bg); }
+
+/* ═══════════════════════════════════════════════════════
+   UPTIME CARD
+═══════════════════════════════════════════════════════ */
+.uptime-card { display: flex; flex-direction: column; justify-content: center; }
+.uptime-segments {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+}
+.uptime-seg {
+  flex: 1; height: 28px;
+  border-radius: 5px;
+  background: var(--pill-bg);
+  transition: background 0.3s;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .main-grid { grid-template-columns: 1fr 1fr; }
+  .col-span-3 { grid-column: span 2; }
+  .chart-card { grid-column: span 2; }
+  .history-card { grid-column: span 2; }
+}
+@media (max-width: 700px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .col-span-2, .col-span-3, .chart-card, .history-card { grid-column: span 1; }
+  .header { flex-wrap: wrap; gap: 12px; }
+  .header-right { flex-wrap: wrap; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card { animation: fade-up 0.5s ease both; }
+.card:nth-child(1)  { animation-delay: 0.05s; }
+.card:nth-child(2)  { animation-delay: 0.10s; }
+.card:nth-child(3)  { animation-delay: 0.15s; }
+.card:nth-child(4)  { animation-delay: 0.20s; }
+.card:nth-child(5)  { animation-delay: 0.25s; }
+.card:nth-child(6)  { animation-delay: 0.30s; }
+.card:nth-child(7)  { animation-delay: 0.35s; }
+.card:nth-child(8)  { animation-delay: 0.40s; }
+
+.num-anim { transition: all 0.4s ease; }
+</style>
+</head>
+<body data-theme="dawn">
+
+<!-- Alarm Toasts -->
+<div id="alarmToast"></div>
+
+<div class="app-wrapper">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">SmartGrid</div>
+        <div class="logo-sub">Appliance Intelligence</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="ip-input-row">
+        <input class="ip-input" id="espIp" type="text" placeholder="192.168.1.100" value="192.168.1.100">
+        <button class="btn-connect" onclick="connectWS()">Connect</button>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-dot" id="connDot"></div>
+        <span id="connLabel">Disconnected</span>
+      </div>
+      <div class="theme-switcher">
+        <button class="theme-btn active" data-t="dawn"     onclick="setTheme('dawn')"></button>
+        <button class="theme-btn"        data-t="slate"    onclick="setTheme('slate')"></button>
+        <button class="theme-btn"        data-t="forest"   onclick="setTheme('forest')"></button>
+        <button class="theme-btn"        data-t="lavender" onclick="setTheme('lavender')"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- ── TOTAL POWER ── -->
+    <div class="card power-card">
+      <div class="card-header">
+        <span class="card-title">Total Power</span>
+        <div class="card-icon">🔌</div>
+      </div>
+      <div class="power-ring-wrap">
+        <canvas id="powerRing" width="160" height="160"></canvas>
+        <div class="power-ring-center">
+          <div class="power-ring-watts" id="ringWatts">0</div>
+          <div class="power-ring-label">Watts</div>
+        </div>
+      </div>
+      <div class="power-stats-row">
+        <div class="power-stat-item">
+          <div class="power-stat-val" id="totalCurrent">0.00</div>
+          <div class="power-stat-lbl">Amps</div>
+        </div>
+        <div class="power-stat-item">
+          <div class="power-stat-val" id="totalKwh">0.000</div>
+          <div class="power-stat-lbl">kWh</div>
+        </div>
+        <div class="power-stat-item">
+          <div class="power-stat-val" id="totalBill">₹0.00</div>
+          <div class="power-stat-lbl">Bill</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── APPLIANCE 1 ── -->
+    <div class="card appliance-card" id="card1">
+      <div class="alarm-badge" id="alarm1Badge">🔴 OVER LIMIT</div>
+      <div class="appliance-header">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="appliance-icon-wrap" id="icon1">💡</div>
+          <div>
+            <div class="appliance-name">Appliance 1</div>
+            <div class="appliance-status">
+              <div class="status-dot" id="dot1"></div>
+              <span id="status1Label">Offline</span>
+            </div>
+          </div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" class="toggle-input" id="toggle1">
+          <label class="toggle-label" for="toggle1" onclick="toggleRelay(1)"></label>
+        </div>
+      </div>
+      <div class="power-bar-wrap">
+        <div class="power-bar-header">
+          <span class="power-bar-watts"><span id="p1Watts">0</span> W</span>
+          <span class="power-bar-limit">Limit: <span id="p1LimitDisplay">500</span>W</span>
+        </div>
+        <div class="power-bar-bg">
+          <div class="power-bar-fill" id="p1Bar" style="width:0%;background:var(--on-color)"></div>
+        </div>
+      </div>
+      <div class="limit-section">
+        <div class="limit-label">
+          <span>Power Limit</span>
+          <span class="limit-val" id="limit1Val">500 W</span>
+        </div>
+        <input type="range" class="range-slider" id="limit1" min="10" max="3000" step="10" value="500"
+          oninput="updateLimit(1, this.value)" onchange="sendLimit(1, this.value)">
+      </div>
+      <div class="energy-row">
+        <div class="energy-item">
+          <div class="energy-val" id="e1Wh">0.0</div>
+          <div class="energy-lbl">Wh Used</div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-val" id="e1Bill">₹0.00</div>
+          <div class="energy-lbl">Cost</div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-val" id="e1Pct">0%</div>
+          <div class="energy-lbl">of Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── APPLIANCE 2 ── -->
+    <div class="card appliance-card" id="card2">
+      <div class="alarm-badge" id="alarm2Badge">🔴 OVER LIMIT</div>
+      <div class="appliance-header">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="appliance-icon-wrap" id="icon2">🌡️</div>
+          <div>
+            <div class="appliance-name">Appliance 2</div>
+            <div class="appliance-status">
+              <div class="status-dot" id="dot2"></div>
+              <span id="status2Label">Offline</span>
+            </div>
+          </div>
+        </div>
+        <div class="toggle-wrap">
+          <input type="checkbox" class="toggle-input" id="toggle2">
+          <label class="toggle-label" for="toggle2" onclick="toggleRelay(2)"></label>
+        </div>
+      </div>
+      <div class="power-bar-wrap">
+        <div class="power-bar-header">
+          <span class="power-bar-watts"><span id="p2Watts">0</span> W</span>
+          <span class="power-bar-limit">Limit: <span id="p2LimitDisplay">500</span>W</span>
+        </div>
+        <div class="power-bar-bg">
+          <div class="power-bar-fill" id="p2Bar" style="width:0%;background:var(--accent)"></div>
+        </div>
+      </div>
+      <div class="limit-section">
+        <div class="limit-label">
+          <span>Power Limit</span>
+          <span class="limit-val" id="limit2Val">500 W</span>
+        </div>
+        <input type="range" class="range-slider" id="limit2" min="10" max="3000" step="10" value="500"
+          oninput="updateLimit(2, this.value)" onchange="sendLimit(2, this.value)">
+      </div>
+      <div class="energy-row">
+        <div class="energy-item">
+          <div class="energy-val" id="e2Wh">0.0</div>
+          <div class="energy-lbl">Wh Used</div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-val" id="e2Bill">₹0.00</div>
+          <div class="energy-lbl">Cost</div>
+        </div>
+        <div class="energy-item">
+          <div class="energy-val" id="e2Pct">0%</div>
+          <div class="energy-lbl">of Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── POWER CHART ── -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <span class="card-title">Power Usage Graph</span>
+        <div class="chart-controls">
+          <button class="chart-tab active" onclick="setChartView('power',this)">Power</button>
+          <button class="chart-tab" onclick="setChartView('energy',this)">Energy</button>
+          <button class="chart-tab" onclick="setChartView('both',this)">Both</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="powerChart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4fc88a"></div>
+          Total Power (W)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent)"></div>
+          Appliance 1
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#a78bfa"></div>
+          Appliance 2
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BILL PREDICTOR ── -->
+    <div class="card bill-card">
+      <div class="card-header">
+        <span class="card-title">Bill Predictor</span>
+        <div class="card-icon">💰</div>
+      </div>
+      <div class="bill-main">
+        <span class="bill-currency">₹</span>
+        <span class="bill-amount" id="monthlyBillAmt">0.00</span>
+      </div>
+      <div class="bill-period">Projected monthly bill</div>
+      <div class="bill-breakdown">
+        <div class="bill-row">
+          <span class="bill-row-label">Monthly kWh</span>
+          <span class="bill-row-val" id="monthlyKwh">0.0 kWh</span>
+        </div>
+        <div class="bill-row">
+          <span class="bill-row-label">Today's cost</span>
+          <span class="bill-row-val" id="todayCost">₹0.00</span>
+        </div>
+        <div class="bill-row">
+          <span class="bill-row-label">Appliance 1 share</span>
+          <span class="bill-row-val" id="a1Share">₹0.00</span>
+        </div>
+        <div class="bill-row">
+          <span class="bill-row-label">Appliance 2 share</span>
+          <span class="bill-row-val" id="a2Share">₹0.00</span>
+        </div>
+      </div>
+      <div class="tariff-section">
+        <div class="tariff-label">Electricity tariff (₹/kWh)</div>
+        <div class="tariff-input-wrap">
+          <input class="tariff-input" id="tariffInput" type="number" step="0.1" value="6.50">
+          <span class="tariff-unit">₹/kWh</span>
+          <button class="tariff-save" onclick="saveTariff()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY ── -->
+    <div class="card history-card">
+      <div class="card-header">
+        <span class="card-title">Usage History</span>
+        <button class="reset-btn" onclick="resetData()">🔄 Reset Data</button>
+      </div>
+      <div class="history-scroll">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Total W</th>
+              <th>Appliance 1</th>
+              <th>Appliance 2</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">
+              Connect to ESP32 to see history
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SMART SUGGESTIONS ── -->
+    <div class="card suggest-card">
+      <div class="card-header">
+        <span class="card-title">Smart Suggestions</span>
+        <div class="card-icon">🧠</div>
+      </div>
+      <div class="suggestion-list" id="suggestionList">
+        <div class="suggestion-item">
+          <div class="suggest-icon">💡</div>
+          <div class="suggest-text">
+            <span class="suggest-tag info">Info</span><br>
+            Connect to your ESP32 to get personalized energy saving suggestions.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-grid -->
+</div><!-- end app-wrapper -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let ws = null;
+let state = {
+  relay1: false, relay2: false,
+  totalPower: 0, power1: 0, power2: 0,
+  current: 0, totalKWh: 0,
+  bill: 0, monthlyBill: 0, monthlyKWh: 0,
+  energy1Wh: 0, energy2Wh: 0,
+  alarm1: false, alarm2: false,
+  limit1: 500, limit2: 500,
+  tariff: 6.5, uptime: 0
+};
+let historyData = [];
+let chartView = 'power';
+let powerChart = null;
+let ringCtx = null;
+let prevAlarm1 = false, prevAlarm2 = false;
+
+// Live feed for chart (last 40 points)
+let livePoints = [];
+const MAX_LIVE = 40;
+
+// ═══════════════════════════════════════════════════════
+//  WEBSOCKET
+// ═══════════════════════════════════════════════════════
+function connectWS() {
+  const ip = document.getElementById('espIp').value.trim();
+  if (ws) ws.close();
+  ws = new WebSocket(`ws://${ip}:81`);
+  ws.onopen = () => setConnected(true);
+  ws.onclose = () => setConnected(false);
+  ws.onerror = () => setConnected(false);
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'status') updateState(msg);
+      else if (msg.type === 'history') updateHistory(msg.data);
+    } catch(_) {}
+  };
+}
+
+function send(obj) {
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
+}
+
+function setConnected(ok) {
+  document.getElementById('connDot').className = ok ? 'connection-dot live' : 'connection-dot';
+  document.getElementById('connLabel').textContent = ok ? 'Live' : 'Disconnected';
+}
+
+// ═══════════════════════════════════════════════════════
+//  STATE UPDATE
+// ═══════════════════════════════════════════════════════
+function updateState(msg) {
+  Object.assign(state, msg);
+
+  // Toggles
+  document.getElementById('toggle1').checked = state.relay1;
+  document.getElementById('toggle2').checked = state.relay2;
+
+  // Status dots
+  setRelayUI(1, state.relay1);
+  setRelayUI(2, state.relay2);
+
+  // Power values
+  document.getElementById('ringWatts').textContent = Math.round(state.totalPower);
+  document.getElementById('totalCurrent').textContent = state.current.toFixed(2);
+  document.getElementById('totalKwh').textContent = state.totalKWh.toFixed(3);
+  document.getElementById('totalBill').textContent = '₹' + state.bill.toFixed(2);
+
+  document.getElementById('p1Watts').textContent = Math.round(state.power1);
+  document.getElementById('p2Watts').textContent = Math.round(state.power2);
+
+  // Power bars
+  const pct1 = Math.min(100, (state.power1 / state.limit1) * 100);
+  const pct2 = Math.min(100, (state.power2 / state.limit2) * 100);
+  const bar1 = document.getElementById('p1Bar');
+  const bar2 = document.getElementById('p2Bar');
+  bar1.style.width = pct1 + '%';
+  bar2.style.width = pct2 + '%';
+  bar1.style.background = state.alarm1 ? 'var(--off-color)' : 'var(--on-color)';
+  bar2.style.background = state.alarm2 ? 'var(--off-color)' : 'var(--accent)';
+
+  // Energy
+  const t = state.energy1Wh + state.energy2Wh || 1;
+  document.getElementById('e1Wh').textContent = state.energy1Wh.toFixed(1);
+  document.getElementById('e1Bill').textContent = '₹' + (state.energy1Wh / 1000 * state.tariff).toFixed(2);
+  document.getElementById('e1Pct').textContent = Math.round((state.energy1Wh / t) * 100) + '%';
+  document.getElementById('e2Wh').textContent = state.energy2Wh.toFixed(1);
+  document.getElementById('e2Bill').textContent = '₹' + (state.energy2Wh / 1000 * state.tariff).toFixed(2);
+  document.getElementById('e2Pct').textContent = Math.round((state.energy2Wh / t) * 100) + '%';
+
+  // Limits display
+  document.getElementById('p1LimitDisplay').textContent = state.limit1;
+  document.getElementById('p2LimitDisplay').textContent = state.limit2;
+  document.getElementById('limit1Val').textContent = state.limit1 + ' W';
+  document.getElementById('limit2Val').textContent = state.limit2 + ' W';
+  document.getElementById('limit1').value = state.limit1;
+  document.getElementById('limit2').value = state.limit2;
+
+  // Bill predictor
+  document.getElementById('monthlyBillAmt').textContent = state.monthlyBill.toFixed(2);
+  document.getElementById('monthlyKwh').textContent = state.monthlyKWh.toFixed(1) + ' kWh';
+  document.getElementById('todayCost').textContent = '₹' + state.bill.toFixed(2);
+  document.getElementById('a1Share').textContent = '₹' + (state.energy1Wh / 1000 * state.tariff).toFixed(2);
+  document.getElementById('a2Share').textContent = '₹' + (state.energy2Wh / 1000 * state.tariff).toFixed(2);
+  document.getElementById('tariffInput').value = state.tariff;
+
+  // Alarms
+  const a1b = document.getElementById('alarm1Badge');
+  const a2b = document.getElementById('alarm2Badge');
+  a1b.classList.toggle('visible', state.alarm1);
+  a2b.classList.toggle('visible', state.alarm2);
+  document.getElementById('card1').style.boxShadow = state.alarm1
+    ? '0 0 0 2px var(--off-color), var(--shadow-lift)' : '';
+  document.getElementById('card2').style.boxShadow = state.alarm2
+    ? '0 0 0 2px var(--off-color), var(--shadow-lift)' : '';
+
+  // Alarm toasts
+  if (state.alarm1 && !prevAlarm1) showAlarmToast(1, state.power1, state.limit1);
+  if (state.alarm2 && !prevAlarm2) showAlarmToast(2, state.power2, state.limit2);
+  prevAlarm1 = state.alarm1;
+  prevAlarm2 = state.alarm2;
+
+  // Ring chart
+  drawRing(state.totalPower, Math.max(state.limit1, state.limit2) * 2);
+
+  // Live chart data
+  const now = new Date();
+  const label = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0') + ':' + now.getSeconds().toString().padStart(2,'0');
+  livePoints.push({ t: label, total: state.totalPower, p1: state.power1, p2: state.power2 });
+  if (livePoints.length > MAX_LIVE) livePoints.shift();
+  updateChart();
+
+  // Suggestions
+  updateSuggestions();
+}
+
+// ═══════════════════════════════════════════════════════
+//  RELAY UI
+// ═══════════════════════════════════════════════════════
+function setRelayUI(n, on) {
+  const dot = document.getElementById('dot' + n);
+  const icon = document.getElementById('icon' + n);
+  const lbl = document.getElementById('status' + n + 'Label');
+  dot.className = 'status-dot' + (on ? ' on' : '');
+  icon.className = 'appliance-icon-wrap' + (on ? ' on' : '');
+  lbl.textContent = on ? 'Running' : 'Standby';
+}
+
+function toggleRelay(n) {
+  send({ action: 'toggle' + n });
+}
+
+// ═══════════════════════════════════════════════════════
+//  LIMITS & TARIFF
+// ═══════════════════════════════════════════════════════
+function updateLimit(n, v) {
+  document.getElementById('limit' + n + 'Val').textContent = v + ' W';
+  document.getElementById('p' + n + 'LimitDisplay').textContent = v;
+}
+function sendLimit(n, v) {
+  send({ action: 'setLimit' + n, value: parseFloat(v) });
+}
+function saveTariff() {
+  const v = parseFloat(document.getElementById('tariffInput').value);
+  if (!isNaN(v) && v > 0) send({ action: 'setTariff', value: v });
+}
+function resetData() {
+  if (confirm('Reset all energy data and history?')) {
+    send({ action: 'resetEnergy' });
+    historyData = [];
+    livePoints = [];
+    renderHistory();
+    updateChart();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  RING CHART
+// ═══════════════════════════════════════════════════════
+function initRing() {
+  const canvas = document.getElementById('powerRing');
+  ringCtx = canvas.getContext('2d');
+  drawRing(0, 3000);
+}
+
+function drawRing(value, max) {
+  if (!ringCtx) return;
+  const ctx = ringCtx;
+  const cx = 80, cy = 80, r = 64, lw = 12;
+  ctx.clearRect(0, 0, 160, 160);
+
+  // Background arc
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, Math.PI * 0.75, Math.PI * 2.25);
+  ctx.lineWidth = lw;
+  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--pill-bg').trim() || 'rgba(128,128,128,0.15)';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Value arc
+  const pct = Math.min(1, value / Math.max(max, 1));
+  const startAngle = Math.PI * 0.75;
+  const endAngle = startAngle + (Math.PI * 1.5 * pct);
+  const color1 = value > max * 0.8 ? '#f06060' : value > max * 0.5 ? '#f0a060' : '#4fc88a';
+
+  const grad = ctx.createLinearGradient(0, 0, 160, 160);
+  grad.addColorStop(0, color1);
+  grad.addColorStop(1, getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#4f8ef7');
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.lineWidth = lw;
+  ctx.strokeStyle = grad;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════════════
+//  POWER CHART
+// ═══════════════════════════════════════════════════════
+function initChart() {
+  const ctx = document.getElementById('powerChart').getContext('2d');
+  const style = getComputedStyle(document.body);
+  const gridColor = style.getPropertyValue('--chart-grid').trim();
+  const textColor = style.getPropertyValue('--text-muted').trim();
+
+  powerChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Total (W)',
+          data: [], borderColor: '#4fc88a', backgroundColor: 'rgba(79,200,138,0.06)',
+          borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 4
+        },
+        {
+          label: 'Appliance 1 (W)',
+          data: [], borderColor: 'var(--accent, #e07b39)', backgroundColor: 'rgba(224,123,57,0.05)',
+          borderWidth: 1.5, fill: false, tension: 0.4, pointRadius: 0, pointHoverRadius: 3
+        },
+        {
+          label: 'Appliance 2 (W)',
+          data: [], borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.05)',
+          borderWidth: 1.5, fill: false, tension: 0.4, pointRadius: 0, pointHoverRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          titleFont: { family: 'JetBrains Mono', size: 11 },
+          bodyFont: { family: 'DM Sans', size: 12 },
+          padding: 10, cornerRadius: 8
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: textColor, font: { size: 10, family: 'JetBrains Mono' }, maxTicksLimit: 8 },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: { color: textColor, font: { size: 10 } },
+          grid: { color: gridColor },
+          min: 0
+        }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!powerChart) return;
+  const labels = livePoints.map(p => p.t);
+  powerChart.data.labels = labels;
+  if (chartView === 'power' || chartView === 'both') {
+    powerChart.data.datasets[0].data = livePoints.map(p => p.total);
+    powerChart.data.datasets[1].data = livePoints.map(p => p.p1);
+    powerChart.data.datasets[2].data = livePoints.map(p => p.p2);
+  } else {
+    // Energy from history
+    powerChart.data.labels = historyData.map(h => formatTime(h.t));
+    powerChart.data.datasets[0].data = historyData.map(h => h.p);
+    powerChart.data.datasets[1].data = [];
+    powerChart.data.datasets[2].data = [];
+  }
+  powerChart.update('none');
+}
+
+function setChartView(v, btn) {
+  chartView = v;
+  document.querySelectorAll('.chart-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateChart();
+}
+
+// ═══════════════════════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════════════════════
+function updateHistory(data) {
+  historyData = data;
+  renderHistory();
+}
+
+function renderHistory() {
+  const body = document.getElementById('historyBody');
+  if (!historyData.length) {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;">No history yet</td></tr>';
+    return;
+  }
+  const rows = [...historyData].reverse().slice(0, 60).map(h => `
+    <tr>
+      <td class="mono">${formatTime(h.t)}</td>
+      <td class="mono">${h.p.toFixed(0)} W</td>
+      <td><span class="status-pill ${h.r1 ? 'on' : 'off'}">${h.r1 ? '● ON' : '○ OFF'}</span></td>
+      <td><span class="status-pill ${h.r2 ? 'on' : 'off'}">${h.r2 ? '● ON' : '○ OFF'}</span></td>
+    </tr>
+  `).join('');
+  body.innerHTML = rows;
+}
+
+function formatTime(sec) {
+  const d = new Date(sec * 1000);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+}
+
+// ═══════════════════════════════════════════════════════
+//  SMART SUGGESTIONS
+// ═══════════════════════════════════════════════════════
+function updateSuggestions() {
+  const suggestions = [];
+
+  // Over limit
+  if (state.alarm1) suggestions.push({ icon: '⚠️', tag: 'warn', text: `Appliance 1 is drawing ${Math.round(state.power1)}W, exceeding your ${state.limit1}W limit. Consider turning it off or increasing the limit.` });
+  if (state.alarm2) suggestions.push({ icon: '⚠️', tag: 'warn', text: `Appliance 2 is drawing ${Math.round(state.power2)}W, exceeding your ${state.limit2}W limit.` });
+
+  // Both on at peak load
+  if (state.relay1 && state.relay2 && state.totalPower > 1500) {
+    suggestions.push({ icon: '🔄', tag: 'tip', text: 'Running both appliances simultaneously is using ' + Math.round(state.totalPower) + 'W. Try staggering usage to reduce peak load.' });
+  }
+
+  // High monthly bill
+  if (state.monthlyBill > 500) {
+    suggestions.push({ icon: '💸', tag: 'warn', text: `At this rate, your monthly bill will be ₹${state.monthlyBill.toFixed(0)}. Reducing usage by 20% could save you ₹${(state.monthlyBill * 0.2).toFixed(0)}.` });
+  }
+
+  // Low usage - good news
+  if (state.totalPower < 100 && (state.relay1 || state.relay2)) {
+    suggestions.push({ icon: '✅', tag: 'tip', text: 'Great! Your current power usage is very efficient at ' + Math.round(state.totalPower) + 'W.' });
+  }
+
+  // Standby reminder
+  if (!state.relay1 && !state.relay2) {
+    suggestions.push({ icon: '😴', tag: 'info', text: 'All appliances are off. Good for saving energy! You can schedule them using the toggles above.' });
+  }
+
+  // Tariff suggestion
+  if (state.tariff < 4) {
+    suggestions.push({ icon: '📊', tag: 'info', text: 'Your tariff rate seems low. Verify your electricity bill tariff to get accurate predictions.' });
+  }
+
+  // Default
+  if (!suggestions.length) {
+    suggestions.push({ icon: '🌿', tag: 'tip', text: 'Your appliance usage looks normal. Total power: ' + Math.round(state.totalPower) + 'W across ' + ((state.relay1 ? 1 : 0) + (state.relay2 ? 1 : 0)) + ' active device(s).' });
+  }
+
+  const list = document.getElementById('suggestionList');
+  list.innerHTML = suggestions.map(s => `
+    <div class="suggestion-item">
+      <div class="suggest-icon">${s.icon}</div>
+      <div class="suggest-text">
+        <span class="suggest-tag ${s.tag}">${s.tag === 'warn' ? 'Warning' : s.tag === 'tip' ? 'Tip' : 'Info'}</span><br>
+        ${s.text}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  ALARM TOAST
+// ═══════════════════════════════════════════════════════
+function showAlarmToast(n, power, limit) {
+  const container = document.getElementById('alarmToast');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <div class="toast-icon">🚨</div>
+    <div class="toast-body">
+      <div class="toast-title">Power Limit Exceeded!</div>
+      <div class="toast-msg">Appliance ${n} is drawing ${Math.round(power)}W (limit: ${limit}W)</div>
+    </div>
+    <div class="toast-close" onclick="this.parentElement.remove()">✕</div>
+  `;
+  container.appendChild(toast);
+  // Play beep
+  playBeep();
+  setTimeout(() => toast.remove(), 8000);
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+  } catch(_) {}
+}
+
+// ═══════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════
+function setTheme(t) {
+  document.body.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+  localStorage.setItem('sg_theme', t);
+  // Refresh chart colors
+  setTimeout(() => { if (powerChart) { powerChart.destroy(); initChart(); updateChart(); } drawRing(state.totalPower, (state.limit1 + state.limit2)); }, 50);
+}
+
+// ═══════════════════════════════════════════════════════
+//  DEMO MODE (when not connected)
+// ═══════════════════════════════════════════════════════
+function runDemo() {
+  let t = 0;
+  setInterval(() => {
+    if (ws && ws.readyState === 1) return; // don't demo if connected
+    t++;
+    const p1 = state.relay1 ? 200 + Math.sin(t * 0.1) * 30 : 0;
+    const p2 = state.relay2 ? 350 + Math.cos(t * 0.08) * 40 : 0;
+    const total = p1 + p2;
+    const fakeState = {
+      relay1: state.relay1, relay2: state.relay2,
+      totalPower: total, power1: p1, power2: p2,
+      current: total / 230,
+      totalKWh: (state.totalKWh || 0) + total / 3600000,
+      energy1Wh: (state.energy1Wh || 0) + p1 / 3600,
+      energy2Wh: (state.energy2Wh || 0) + p2 / 3600,
+      bill: ((state.totalKWh || 0) * state.tariff),
+      monthlyBill: (total / 1000) * 720 * state.tariff,
+      monthlyKWh: (total / 1000) * 720,
+      alarm1: p1 > state.limit1, alarm2: p2 > state.limit2,
+      limit1: state.limit1, limit2: state.limit2,
+      tariff: state.tariff, uptime: t
+    };
+    updateState(fakeState);
+  }, 1500);
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  // Restore theme
+  const savedTheme = localStorage.getItem('sg_theme') || 'dawn';
+  setTheme(savedTheme);
+
+  initRing();
+
+  // Wait a tick for Chart.js fonts
+  setTimeout(() => {
+    initChart();
+    runDemo();
+  }, 100);
+
+  // Relay toggles - prevent double-fire
+  ['toggle1','toggle2'].forEach((id, i) => {
+    document.getElementById(id).addEventListener('click', e => e.stopPropagation());
+  });
+});
+</script>
+</body>
+</html>
